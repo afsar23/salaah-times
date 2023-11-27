@@ -1,0 +1,28 @@
+/* 
+	generic form styling
+   needs a bit of tlc
+*/   
+
+    form				        	{display:block;background-color:#EEE;border-radius:3px;padding:5px}
+	form fieldset		        	{font-weight:medium;font-size:105%;background-color: transparent;}
+	form fieldset[disabled]			{background-color:#DEA;}
+	form legend			    		{border-radius:3px;font-weight:bold;background-color:#CCC}
+	
+	form label			        	{width:auto;
+										font-weight:bold;
+										display:inline-block;
+										vertical-align:top;
+										background-color:transparent;
+										margin-top:2px;
+										margin-bottom:0px}
+	form input, select, textarea	{border-radius:1px;margin-bottom:0px;margin-top:0px;display:inline-block}
+	form input.displayfield	    	{border:none;font-weight:bold;background-color:#EFE}
+	form select.inline             	{display:inline-block;}
+	
+    form hr  						{margin:0px}
+
+	input.btn	{background-color:#BCB;font-weight:medium;font-size:100%;display:block;padding:3px;margin-top:3px; right:3px}
+
+    .subtext 	{float:left;margin-left:5px;font-size:85%;color:#AA3311;margin-top:0px}
+	
+    

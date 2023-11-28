@@ -16,12 +16,12 @@ defined('ABSPATH') or die("Cannot access pages directly.");
 
 function UploadCSV() {
 
-    $api_url        = get_rest_url(null,"wtk/v1/uploadfile");		// custom user registration end point
+    $api_url        = get_rest_url(null,"wtk/v1/import_csv");		// custom user registration end point
 	$jsCallBack     = "postFormProcessing";
 
 	?>
 		<div id="response"></div>
-		<form id="importform" action="javascript:;" onsubmit="submitForm(this,'<?=$api_url?>',<?=$jsCallBack?>);"> 
+		<form id="importform" action="javascript:;" onsubmit="submitFormCustom(this,'<?=$api_url?>',<?=$jsCallBack?>);"> 
 		<?php 
 			wp_nonce_field(wtkNonceKey(), '_wpnonce');
 		?>
@@ -48,10 +48,9 @@ function UploadCSV() {
 			}
 		}	
 
-		function frmUploadSubmit(frm, restURL, jsCallBack) {
+		function submitFormCustom(frm, restURL, jsCallBack) {			
 
 			event.preventDefault();
-			alert("Here!");
 			var file = $('input#csv')[0].files[0];
 			var formData = new FormData();
 
@@ -60,22 +59,32 @@ function UploadCSV() {
 			// append any other formData
 			// e.g. any id fields, etc as necessary here
 
-			$.ajax({
+			$j.ajax({
 				url: restURL,
 				data: formData,
 				processData: false,
-				contentType: false,
+				contentType: false,  //'multipart/form-data',
 				method: 'POST',
 				cache: false,
 				beforeSend: function ( xhr ) {
-				  xhr.setRequestHeader( 'X-WP-Nonce', pluginConfig.restNonce );
+				  //xhr.setRequestHeader( 'X-WP-Nonce', pluginConfig.restNonce );
+				  xhr.setRequestHeader( 'Authorization', 'Bearer ' + getCookie('jwt_token') );
 				}
 			})
 			.done(function(data) {
-				// handle success
+				console.log(data);
+				msg = prettifyJSON(data);
+				$j('#response').html("<div class='alert alert-success'>" + msg + "</div>");
+				//if (response.hasOwnProperty('redirect')) {
+				//	location.href = response.redirect;
+				//}
+				//} else {
+				//	$j('#response').html("<div class='alert alert-danger'>"+response.message+"</div>");
+				//}
 			})
-				.fail(function(jqXHR, textStatus, errorThrown) {
-				// handle failure
+			.fail(function(jqXHR, textStatus, errorThrown) {
+				console.log(jqXHR);
+				$j('#response').html("<div class='alert alert-danger'>"+textStatus+"</div>");
 			});
 		}
 			

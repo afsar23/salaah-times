@@ -26,6 +26,9 @@ define("MY_TEXT_DOMAIN", "wtk");
 
 add_action( 'rest_api_init', 'Afsar\wtk\api_routes' );
 
+
+require_once plugin_dir_path( __FILE__ ) . 'api_Upload.php';
+				
 function api_routes($request = null) {
 
 
@@ -34,6 +37,13 @@ function api_routes($request = null) {
 	// emergency disabling of all APIs!!!
 		//echo json_encode(["status"=>"Ooops","message"=>"Better luck next time, matey!"]);
 		//exit;
+	
+			
+			register_rest_route( 'wtk/v1', '/import_csv', [
+					'methods' => [ 'POST' ],
+					'callback' => 'Afsar\wtk\importCSVPostRequestHandler',
+					'permission_callback' => 'Afsar\wtk\enforceAdminPermissions',
+			] );	
 	
 	
 	
@@ -253,11 +263,10 @@ function api_before_callback( $response, $handler, \WP_REST_Request $request ) {
 
 	$JWTToken = getBearerToken();
 	$tokenvalidation = JWTTokenValidation($JWTToken);
-	//echo printable($tokenvalidation);
-	if ($tokenvalidation["status"] =="error") {
-		$response = ["status"=>"error","message"=>"Invalid token. Permission denied!"];
-		//return rest_ensure_response($response,200); 
-	}
+	//if ($tokenvalidation["status"]=="error") {
+	//	$response = ["status"=>"error","message"=>"Invalid token. Permission denied! Before"];
+	//	return rest_ensure_response($response,200); 
+	//}
 	
 	$api_request = [
 			"params"=>$params,
@@ -298,18 +307,26 @@ function api_after_callback( $api_response, $handler, \WP_REST_Request $request 
 						'/wtk/v1/password_reset',
 						'/wtk/v1/password_reset',
 						'/wtk/v1/update_password',
-						'/wtk/v1/contact_us'];
+						'/wtk/v1/contact_us',
+						'/wtk/v1/import_csvXX'];				//?????
 						
 	$route = $request->get_route();
-
+	
+	$JWTToken = getBearerToken();
+	
+	//temp
+	///if (in_array($route, $NonceCheckedRoutes)) {
+		//$tokenvalidation = JWTTokenValidation($JWTToken);
+		//$api_response = rest_ensure_response(["status"=>"error","message"=>"Invalid token. Permission denied.", "token"=>$JWTToken, "validation"=>$tokenvalidation],200);
+	//}
+	
 	if (!in_array($route, $NonceCheckedRoutes)) {
-		$JWTToken = getBearerToken();
 		$tokenvalidation = JWTTokenValidation($JWTToken);
 		//echo printable($tokenvalidation);
-		if ($tokenvalidation["status"] =="error") {
+		if (isset($tokenvalidation["status"]) && $tokenvalidation["status"] =="error") {
 			if (strpos($route,"wtk/")) {    // it's a plugin api end point
 				//die("Here!");
-				$api_response = rest_ensure_response(["status"=>"error","message"=>"Invalid token. Permission denied."],200);
+				$api_response = rest_ensure_response(["status"=>"error","message"=>"Invalid token. Permission denied!"],200);
 			}
 		}
 	}

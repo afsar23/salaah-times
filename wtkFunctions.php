@@ -153,7 +153,7 @@ function JWTTokenValidation($token) {
 	try {        
 		$decoded_jwt = JWT::decode($token, $jwt_key, [$jwt_alg]);       // validates token and will throw errors if token is not valid
 		$UserInfo = (array) $decoded_jwt->data;     				// populates use info from id retrieved from token                        
-		$token_validation = $UserInfo;  //"status"=>"ok", "message"=>"Valid Token"];
+		$token_validation = ["status"=>"success", "message"=>"Valid token", "userinfo"=>$UserInfo]; 
 	}
 	catch (\Throwable $e) {
 		// simply store the token validation results to allow uses cases to decide their own course of action

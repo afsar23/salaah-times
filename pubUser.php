@@ -220,7 +220,7 @@ function reset_password() {
 	$tokenvalidation = JWTTokenValidation($JWTToken);
 	//echo printable($tokenvalidation);
 
-    if ($tokenvalidation["status"] =="ok") {
+    if ($tokenvalidation["status"] =="success") {
 
 		?>
 			<div id="response"></div>

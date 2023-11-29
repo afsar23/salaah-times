@@ -42,7 +42,7 @@ function api_routes($request = null) {
 			register_rest_route( 'wtk/v1', '/import_csv', [
 					'methods' => [ 'POST' ],
 					'callback' => 'Afsar\wtk\importCSVPostRequestHandler',
-					'permission_callback' => 'Afsar\wtk\enforceAdminPermissions',
+					//'permission_callback' => 'Afsar\wtk\wtk_api_permissions_check'
 			] );	
 	
 	
@@ -277,7 +277,7 @@ function api_before_callback( $response, $handler, \WP_REST_Request $request ) {
 			];
 	
 	global $current_user;
-	$uid = (isset($tokenvalidation["ID"])) ? $tokenvalidation["ID"] : 0;
+	$uid = (isset($tokenvalidation["userinfo"])) ? $tokenvalidation["userinfo"]["ID"] : 0;
 	$current_user = wp_set_current_user($uid);
     
 		//$api_user = ["user_id"=>$current_user->ID,"user_login"=>$current_user->user_login, "user_name"=>$current_user->display_name];
@@ -323,7 +323,8 @@ function api_after_callback( $api_response, $handler, \WP_REST_Request $request 
 	if (!in_array($route, $NonceCheckedRoutes)) {
 		$tokenvalidation = JWTTokenValidation($JWTToken);
 		//echo printable($tokenvalidation);
-		if (isset($tokenvalidation["status"]) && $tokenvalidation["status"] =="error") {
+		//if (isset($tokenvalidation["status"]) && $tokenvalidation["status"] =="error") {
+		if ( $tokenvalidation["status"] =="error" ) {
 			if (strpos($route,"wtk/")) {    // it's a plugin api end point
 				//die("Here!");
 				$api_response = rest_ensure_response(["status"=>"error","message"=>"Invalid token. Permission denied!"],200);

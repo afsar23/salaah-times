@@ -11,14 +11,6 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 	
-// entity speciifc api methods
-function enforceAdminPermissions() {
-	//if ( ! ( current_user_can( 'manage_options' ) || current_user_can( 'administrator' ) ) ) {
-	//	return new WP_Error( 'rest_forbidden', esc_html__( 'Private', 'myplugin' ), array( 'status' => 401 ) );
-	//}
-	return true;
-}
-
 function importCSVPostRequestHandler( \WP_REST_Request $request ) {
 
 	$permittedExtension = 'csv';

@@ -17,7 +17,7 @@ defined('ABSPATH') or die("Cannot access pages directly.");
 // invoked by shortcode in pubControler script
 function ViewAnyTable() {
 	
-	$grd_url = get_rest_url(null,"wtk/v1/listdata?table=salaahtimes"); 
+	$grd_url = get_rest_url(null,"wtk/v1/listdata?table=masajid"); 
 	echo '		
 		<div id="grdgeneric" style="width: 100%; height: 550px;"></div>
 		';
@@ -26,10 +26,8 @@ function ViewAnyTable() {
 	<script>
 	
 		$('document').ready(function(){
-
 			init2wuiSettings();		
-			$('#grdgeneric').w2grid(grdConfig());
-			
+			$('#grdgeneric').w2grid(grdConfig());			
 		});		
 		
 		function grdConfig() {

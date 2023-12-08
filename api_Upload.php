@@ -69,11 +69,11 @@ function importCSVPostRequestHandler( \WP_REST_Request $request ) {
 			// such as put it in the database, write it to a file, send it somewhere, etc.
 		}
 		$r++;
-		//if ($r>4) break;
+		if ($r>4) break;			// >>>>>>> temp!
 	}
 	
 	fclose( $handle );
 	// return any necessary data in the response here
-	return rest_ensure_response( ["status"=>"success", "message" => "File uploaded ok!", "records"=> $data], 200 );
+	return rest_ensure_response( ["status"=>"success", "message" => "File uploaded ok!", "Total"=>count($data), "records"=> $data], 200 );
   }
 

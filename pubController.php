@@ -9,6 +9,45 @@ if ( ! defined( 'WPINC' ) ) {
 
 require_once plugin_dir_path( __FILE__ ) . 'pubScriptsStyles.php';
 
+		/* Modify page title without affecting other titles (eg menus) */
+
+			add_filter( 'the_title', 'Afsar\wtk\wtk_title_update', 10, 2 );
+			function wtk_title_update( $title, $id = null ) {
+				
+				$post = get_post( $id );
+				if( $title=="Home" ) {
+					return "";  //"My new Title!";
+				}
+
+				return $title;
+			}
+
+			// this filter fires just before the nav menu item creation process
+			add_filter( 'pre_wp_nav_menu', 'Afsar\wtk\wtk_remove_title_filter_nav_menu', 10, 2 );
+			function wtk_remove_title_filter_nav_menu( $nav_menu, $args ) {
+				// we are working with menu, so remove the title filter
+				remove_filter( 'the_title', 'Afsar\wtk\wtk_title_update', 10, 2 );
+				return $nav_menu;
+			}
+
+			// this filter fires after nav menu item creation is done
+			add_filter( 'wp_nav_menu_items', 'Afsar\wtk\wtk_add_title_filter_non_menu', 10, 2 );
+			function wtk_add_title_filter_non_menu( $items, $args ) {
+				// we are done working with menu, so add the title filter back
+				add_filter( 'the_title', 'Afsar\wtk\wtk_title_update', 10, 2 );
+				return $items;
+			}
+
+
+add_shortcode( 'wtk_app_home', 'Afsar\wtk\wtk_appHome');
+function wtk_appHome($pg_atts = [], $pg_content = null, $pg_tag = '') {
+   // normalize attribute keys, lowercase
+    $pg_atts = array_change_key_case((array)$pg_atts, CASE_LOWER);
+	//die("tag=".$pg_tag);
+	require_once plugin_dir_path( __FILE__ ) . 'pubAppHome.php';
+	appHome($pg_atts);
+}
+
 	
 add_shortcode( 'wtk_contactus', 'Afsar\wtk\wtk_ContactUs');
 function wtk_ContactUs($pg_atts = [], $pg_content = null, $pg_tag = '') {
@@ -290,7 +329,7 @@ add_action('wp_footer', 'Afsar\wtk\my_footer');
 function my_footer() { 
 
 	echo '<div style="background: gainsboro; color: gray;">&copy; Afsar Inc, 2023</div>'; 
-
+	//mosquelist();
 	//ListAllShortCodes();
 
 	//echo "<h4>REST API - Registered Routes</h4>";
@@ -310,3 +349,118 @@ function my_footer() {
 		}
 		echo "</ul>";
     }
+
+/********************************************
+*********************************************/
+
+function mosquelist() {
+	
+	$list = [];	
+	
+	for ($pg=1; $pg<=1; $pg++) {
+	
+		$curlSession = curl_init();
+		curl_setopt($curlSession, CURLOPT_URL, 'https://www.nearestmosque.com/search?page='.$pg.'&country=uk');
+		curl_setopt($curlSession, CURLOPT_BINARYTRANSFER, true);
+		curl_setopt($curlSession, CURLOPT_RETURNTRANSFER, true);
+
+		$tmp = curl_exec($curlSession);
+		$data = $tmp;
+		curl_close($curlSession);
+		
+		while (strpos($tmp, '<i class="fa-solid fa-mosque"></i> <a href="',0)) {
+			$item = [];
+			
+			$c1 = strpos($tmp, '<i class="fa-solid fa-mosque"></i> <a href="',0) + strlen('<i class="fa-solid fa-mosque"></i> <a href="');
+			$c2 = strpos($tmp, '" title="',$c1) - $c1;
+			$href = substr($tmp, $c1, $c2);
+			
+			$tmp = substr($tmp,$c1+$c2);
+			
+			$c1 = strpos($tmp, '>',0)+1;
+			$c2 = strpos($tmp, '</a>',$c1) - $c1;
+			$item["masjid_name"] = substr($tmp, $c1, $c2);	
+
+			$tmp = substr($tmp,$c1+$c2);
+
+			$c1 = strpos($tmp, '<div class="mb-2"><i class="fa-solid fa-location-dot"></i> ',0) + strlen('<div class="mb-2"><i class="fa-solid fa-location-dot"></i> ');
+			$c2 = strpos($tmp, '</div>',$c1) - $c1;
+			
+		/*
+		echo "<pre>". htmlspecialchars($tmp). "</pre>";	
+		echo "<div>c1 = ".$c1."</div>";
+		echo "<div>c2 = ".$c2."</div>";
+		echo "<pre>". htmlspecialchars($tmp). "</pre>";	
+		*/
+			
+			
+			$item["address"] = substr($tmp, $c1, $c2);
+			
+			$tmp = substr($tmp,$c1+$c2);
+
+			$c1 = strpos($tmp, '<a href="',0) + strlen('<a href="');
+			$c2 = strpos($tmp, ' title="',$c1) - $c1;
+			$tmp = substr($tmp,$c1+$c2);
+			
+			$c1 = strpos($tmp, '>',0) + 1;
+			$c2 = strpos($tmp, '</div>',$c1) - $c1;
+			$item["city"] = substr($tmp, $c1, $c2);	
+					
+			$c1 = strpos($tmp, '<div class="mb-2"><i class="fa-solid fa-map"></i> ',0) + strlen('<div class="mb-2"><i class="fa-solid fa-map"></i> ');
+			$c2 = strpos($tmp, '</div>',$c1) - $c1;
+			$item["postcode"] = substr($tmp, $c1, $c2);		
+			
+			$tmp = substr($tmp,$c1+$c2);
+			
+			$dets = mosquedetails($href);
+			$item["what3words"] = $dets["what3words"];
+			$item["phone_no"] = $dets["phone_no"];
+				
+			$list[]=$item;
+
+			//echo count($list).",".$item["masjid_name"].",".$item["address"].",".$item["city"].",".$item["postcode"].",".$item["what3words"].",".$item["phone_no"]."<br/>";
+			echo '"'.implode('","',$item).'"<br/>';
+		}	
+	
+	}
+
+	//echo "<pre>".htmlspecialchars(printable($list))."</pre>";
+	//echo "<pre>".htmlspecialchars($data)."</pre>";	
+	
+}
+
+function mosquedetails($href) {
+	
+	$url = 'https://www.nearestmosque.com'.$href;
+	
+	$curlSession = curl_init();
+    curl_setopt($curlSession, CURLOPT_URL, $url);
+    curl_setopt($curlSession, CURLOPT_BINARYTRANSFER, true);
+    curl_setopt($curlSession, CURLOPT_RETURNTRANSFER, true);
+
+    $tmp = curl_exec($curlSession);
+    curl_close($curlSession);
+
+	$c1 = strpos($tmp, '<a id="nmWhat3Words" class="word-break" title="',0) + strlen('<a id="nmWhat3Words" class="word-break" title="');
+	if (strpos($tmp, '<a id="nmWhat3Words" class="word-break" title="',0)) {
+		$c2 = strpos($tmp, '" target="',$c1) - $c1;
+		$what3words = ($c1==true) ? substr($tmp, $c1, $c2): '';			
+	} else {
+		$c1 = 0;	
+		$c2 =0;
+		$what3words = "";
+	}
+	$tmp = substr($tmp,$c1+$c2);
+	
+	
+	$c1 = strpos($tmp, 'a id="nmTelephone" href="tel:',0) + strlen('a id="nmTelephone" href="tel:');
+	if (strpos($tmp, 'a id="nmTelephone" href="tel:',0)) {
+		$c2 = strpos($tmp, '" title="',$c1) - $c1;
+		$phone_no = substr($tmp, $c1, $c2);
+	} else {
+		$phone_no = '0000 000 0000';
+	}
+	
+	return ["what3words"=>$what3words, "phone_no"=>$phone_no];
+}
+

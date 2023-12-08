@@ -31,7 +31,6 @@ require_once plugin_dir_path( __FILE__ ) . 'clsWptoolkit.php';
 require_once plugin_dir_path( __FILE__ ) . 'wtkWidgets.php';
 require_once plugin_dir_path( __FILE__ ) . 'db_setup.php';
 
-register_activation_hook( __FILE__, 'Afsar\wtk\CreateOrUpdateDbSchema' );
 
 require_once plugin_dir_path( __FILE__ ) . 'wtkFunctions.php';
 require_once plugin_dir_path( __FILE__ ) . 'clsDatabase.php';
@@ -43,6 +42,8 @@ $wtk = new Wptoolkit(__FILE__);
 $pdb = new Database();
 $db = $pdb->getConnection();
 
+CreateOrUpdateDbSchema();
+//register_activation_hook( __FILE__, 'Afsar\wtk\CreateOrUpdateDbSchema' );
 
 wtk_create_plugin_menus();
 

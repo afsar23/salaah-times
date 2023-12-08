@@ -84,7 +84,7 @@ function tabMaintSalaahTimes() {
 				//style 	: 'padding:5px; background-color:yellow',
 				columns	: [  			
 					{ field: 'id', text: 'ID', size:'60px' }, 
-					{ field: 'mosque_id', text: 'Mosque Id', size:'220px', sortable:true},
+					{ field: 'masjid_id', text: 'Masjid Id', size:'220px', sortable:true},
 					{ field: 'd_date', text: 'Date', size:'90px', sortable:true},
 					{ field: 'fajr_jamah', text: 'Fajr', render: function (rec, fld) {
 							var html = '<div>'+ w2utils.formatTime(fld.value, 'hh24:mi') + '</div>';
@@ -97,7 +97,7 @@ function tabMaintSalaahTimes() {
 				],
 				multiSort : true,
 				sortData: [
-					{ field: 'mosque_id', direction: 'asc' },
+					{ field: 'masjid_id', direction: 'asc' },
 					{ field: 'd_date', direction: 'asc' },					
 				],	
 				

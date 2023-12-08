@@ -85,6 +85,7 @@ class Wptoolkit {
 function InitSitePages() {
 
 	$pages = [];
+	$pages["Home"] = "[wtk_app_home]";
 	$pages["About Us"] = "This page contains every thing about us!";
 	$pages["Salaah Times"] = "Manage Salaah Times";
 	$pages["Contact"] = "Use the details below to contact us";

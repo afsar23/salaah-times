@@ -28,23 +28,30 @@ add_action( 'rest_api_init', 'Afsar\wtk\api_routes' );
 
 
 require_once plugin_dir_path( __FILE__ ) . 'api_Upload.php';
+require_once plugin_dir_path( __FILE__ ) . 'api_Mosques.php';
 				
 function api_routes($request = null) {
 
 
 	//$pdata  = json_decode(file_get_contents("php://input"));   // all the posted data required to perform the method
 
-	// emergency disabling of all APIs!!!
-		//echo json_encode(["status"=>"Ooops","message"=>"Better luck next time, matey!"]);
-		//exit;
-	
-			
+	//emergency disabling of all APIs!!!
+	//echo json_encode(["status"=>"error","message"=>"Better luck next time, matey!"]);
+	//exit;
+				
 			register_rest_route( 'wtk/v1', '/import_csv', [
 					'methods' => [ 'POST' ],
 					'callback' => 'Afsar\wtk\importCSVPostRequestHandler',
 					//'permission_callback' => 'Afsar\wtk\wtk_api_permissions_check'
 			] );	
 	
+			register_rest_route( 'wtk/v1', '/mosques', array(
+				[      
+				'methods'  => [ 'POST' ]				
+				,'callback' => 'Afsar\wtk\api_mosques'
+				,'permission_callback' => 'Afsar\wtk\wtk_api_permissions_check'	
+				]			
+			) );
 	
 	
 	// register_rest_route() handles more arguments but we are going to stick to the basics for now.

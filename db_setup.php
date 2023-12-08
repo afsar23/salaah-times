@@ -37,9 +37,28 @@ function CreateOrUpdateDbSchema() {
 		UNIQUE KEY id (id)
 	) $charset_collate;";
 
+	$sql[] = "CREATE TABLE ".prefix("masajid")." (
+		id bigint(18) NOT NULL AUTO_INCREMENT,
+		masjid_id int(9) NOT NULL,
+		masjid_name varchar(120),
+		alt_name varchar(120),
+		address varchar(150),
+		city varchar(50),
+		postcode varchar(10),
+		what3words varchar(100),
+		phone_no varchar(15),
+		website varchar(50),
+		email varchar(50),
+		affiliation_id int(10),
+		masjid_desc longtext,
+		datecreated datetime,
+		dateupdated datetime,
+		UNIQUE KEY id (id)
+	) $charset_collate;";
+
 	$sql[] = "CREATE TABLE ".prefix("salaahtimes")." (
 		id bigint(18) NOT NULL AUTO_INCREMENT,
-		mosque_id int(9) NOT NULL,
+		masjid_id int(9) NOT NULL,
 		d_date date NOT NULL,
 		fajr_begins time NULL,
 		fajr_jamah time NULL,
@@ -56,8 +75,8 @@ function CreateOrUpdateDbSchema() {
 		is_ramadan smallint(6) NULL,
 		hijri_date varchar(256) NULL,
 		UNIQUE KEY id (id)
-	) $charset_collate;";
-
+	) $charset_collate;";	
+		
 	$sql[] = "CREATE TABLE ".prefix("contactus")." (
 		id bigint(9) NOT NULL AUTO_INCREMENT,
 		fullname varchar(50),
@@ -69,17 +88,19 @@ function CreateOrUpdateDbSchema() {
 	) $charset_collate;";
 
 	require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+
 	dbDelta( $sql );
 
     if ( version_compare( $version, '2.0' ) < '3.0' ) {
 		$sql = [];
+		
 		$sql[] = "CREATE TABLE ".prefix("contactus")." (
 			id bigint(9) NOT NULL AUTO_INCREMENT,
 			fullname varchar(50),
 			email varchar(50),
 			subject varchar(50),
 			message varchar(4000),
-			datecreated datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+			datecreated datetime,
 			UNIQUE KEY id (id)
 		) $charset_collate;";
 		

@@ -68,15 +68,10 @@ function HandleApiResponse(api_url, input_data=null,jsCallBack) {
     body: input_data,
   })
   .then( async(response) => {
-    if (response.ok)  {
-        const result = await response.json();
-        jsCallBack(result);       
-    }   
-    else {
-        throw new Error(response.url + ": " + response.status + " - " + response.statusText);
-        }
+		const result = await response.json();
+		jsCallBack(result);       
     })
-  .catch(error => {    
+  .catch(error => {   
     jsCallBack(error);
   });
 

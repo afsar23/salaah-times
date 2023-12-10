@@ -20,12 +20,12 @@ function appHome($pg_atts) {
 	
 	//echo "<h3>Search Mosques</h3>";
 
-	$cities = SelectList("	select '' id, concat('All Cities', ' (', count(1), ')') text from ".prefix("masajid")."
+	$cities = SelectList("	select id, text from (select '' id, concat('All Cities', ' (', count(1), ')') text, count(1) tot from ".prefix("masajid")."
 							union all
-							select city as id, concat(city, ' (', count(1), ')') text
+							select city as id, concat(city, ' (', count(1), ')') text, count(1) tot
 							from ".prefix("masajid")."
-							group by city
-							order by id"
+							group by city) u
+							order by tot desc"
 						);	
 
 	echo '<div id="searchForm"></div>';
@@ -62,7 +62,7 @@ function MasjidSearchForm($cities) {
 					{ field: 'city', html: {label: 'Town/City'},   type: 'list',
 						options: { items: mosquecities }
 					},
-					{ field: '_wpnonce', hidden:true, type:'text'}
+					{ field: '_wpnonce', hidden:false, type:'text'}
 				],
 				record: {
 					_wpnonce: '<?php echo wp_create_nonce(wtkNonceKey());?>'
@@ -75,7 +75,7 @@ function MasjidSearchForm($cities) {
 						onClick(event) {
 							if (this.validate().length == 0) {
 								HandleApiResponse(api_url, JSON.stringify(this.getCleanRecord()),				
-									function(response) {
+									async function(response) {
 										DisplayResults(response);
 									}
 								);
@@ -96,39 +96,45 @@ function MasjidSearchForm($cities) {
 		function DisplayResults(response) {
 
 			if (response.status=="error") {
-				$j('#mosqueresults').html("<div class='alert alert-danger'>"+response.message+"</div>");
+				$j('#mosqueresults').html("<div class='alert alert-danger'>"+prettifyJSON(response)+"</div>");
 				return;
 			}
 			
-			//present the results
-			var html = "Mosques matching your search: " + response.total + "<br/>";
+			var html = "<h6>Mosques matching your search: <b>" + response.total + "</b></h6><hr/>";
 
-				var i = 0, len = response.total;
-				if (len>4) { len = 4; }				
-				while (i++ < len) {
-					var r = response.records[i];
-					//html += '<br/>';
-					html += '<div class="card shadow">';
-					html += '   <div class="card-header">';
-					html += '       <span class="card-title">Masjid Name: <b>'+ r.masjid_name +'</b></span>';
-					html += '   </div>';
-					html += '   <div class="card-body">';
-					html += '		<table>';
-					html += '		<tr><td>Address</td><td>' + r.address + '</td></tr>';
-					html += '		<tr><td>City</td><td>' + r.city + '</td></tr>';
-					html += '		<tr><td>Postcode</td><td>' + r.postcode + '</td></tr>';
-					html += '		<tr><td>What3Words</td><td>' + r.what3words + '</td></tr>';
-					html += '		<tr><td>Telpho</td><td>' + r.phone_no + '</td></tr>';
-					html += '		</table>';
-					html += '   </div>';
-					html += '   <div class="card-footer">';
-					html += '       </div>';
-					html += '   </div>';
-					html += '</div>';
-					html += '<br/>';
-				}			
+			var i = 0;
+			var matches = response.total;
+			while (i < matches) {
+				console.log(i);
+				var r = response.records[i];
+				html += '<b>' + r.masjid_name + '</b>';
+				html += '<br/>' + r.address + ',<a href="http://google.com/maps?q='+r.postcode+'">' + r.postcode + '</a><hr/>';
+				i++;
+				continue;
 				
-			html += "<div class='alert alert-success'>"+prettifyJSON(response)+"</div>";
+				
+				html += '<div class="card shadow">';
+				html += '   <div class="card-header">';
+				html += '       <span class="card-title">Masjid Name: <b>'+ r.masjid_name +'</b></span>';
+				html += '   </div>';
+				html += '   <div class="card-body">';
+				html += '		<table>';
+				html += '		<tr><td>Address</td><td>' + r.address + '</td></tr>';
+				html += '		<tr><td>City</td><td>' + r.city + '</td></tr>';
+				html += '		<tr><td>Postcode</td><td><a href="http://google.com/maps?q='+r.postcode+'">' + r.postcode + '</a></td></tr>';
+				html += '		<tr><td>What3Words</td><td><a href="https://what3words.com/'+r.what3words+'">' + r.what3words + '</a></td></tr>';
+				html += '		<tr><td>Telpho</td><td>' + r.phone_no + '</td></tr>';
+				html += '		</table>';
+				html += '   </div>';
+				html += '   <div class="card-footer">';
+				html += '       </div>';
+				html += '   </div>';
+				html += '</div>';
+				html += '<br/>';
+				i++;
+			}			
+				
+			//html += "<div class='alert alert-success'>"+prettifyJSON(response)+"</div>";
 			$j('#mosqueresults').html(html);
 
 		}	

@@ -690,7 +690,6 @@ function wtk_api_permissions_check(\WP_REST_Request $request = null) {
 	$params = stripslashes_deep($params);
 	$nonce = isset($params['_wpnonce']) ? $params['_wpnonce'] : ''; 
 
-	
 	global $wtk;
 	if (wp_verify_nonce($nonce, wtkNonceKey())) {
 		$wtk->api_authorised = true;

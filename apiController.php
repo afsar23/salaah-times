@@ -38,18 +38,30 @@ function api_routes($request = null) {
 	//emergency disabling of all APIs!!!
 	//echo json_encode(["status"=>"error","message"=>"Better luck next time, matey!"]);
 	//exit;
+
+			register_rest_route( 'wtk/v1', '/testapi', array(
+				[      
+				// By using this constant we ensure that when the WP_REST_Server changes our readable endpoints will work as intended.
+				'methods'  => \WP_REST_Server::ALLMETHODS ,
+				'callback' => 'Afsar\wtk\testapi',
+				'permission_callback' => 'Afsar\wtk\wtk_api_permissions_check',
+				'access_type'=>'LOGGED_IN'
+				]
+			) );
 				
 			register_rest_route( 'wtk/v1', '/import_csv', [
 					'methods' => [ 'POST' ],
 					'callback' => 'Afsar\wtk\importCSVPostRequestHandler',
-					//'permission_callback' => 'Afsar\wtk\wtk_api_permissions_check'
+					'permission_callback' => 'Afsar\wtk\wtk_api_permissions_check',
+					'access_type'=>'LOGGED_IN'
 			] );	
 	
 			register_rest_route( 'wtk/v1', '/mosques', array(
 				[      
-				'methods'  => [ 'POST' ]				
-				,'callback' => 'Afsar\wtk\api_mosques'
-				,'permission_callback' => 'Afsar\wtk\wtk_api_permissions_check'	
+				'methods'  => [ 'POST' ],			
+				'callback' => 'Afsar\wtk\api_mosques',
+				'permission_callback' => 'Afsar\wtk\wtk_api_permissions_check',	
+				'access_type'=>'NONCE'
 				]			
 			) );
 	
@@ -66,7 +78,7 @@ function api_routes($request = null) {
 		
         // Here we register our permissions callback. The callback is fired before the main callback to check if the current user can access the endpoint.
         'permission_callback' => 'Afsar\wtk\wtk_api_permissions_check',	
-			
+		'access_type'=>'NONCE',	
 		// Here we register our arguments schema.
 		'args' => 	[  'example' => [	'description'       => esc_html__( 'This is the index symbol.', MY_TEXT_DOMAIN ),
 										'type'              => 'string',
@@ -170,78 +182,84 @@ function api_routes($request = null) {
     ) );
 
 
-
 	register_rest_route( 'wtk/v1', '/listdata', array(			
 		[      
-		// By using this constant we ensure that when the WP_REST_Server changes our readable endpoints will work as intended.
-        'methods'  => \WP_REST_Server::ALLMETHODS ,
-		
-        // Here we register our callback. The callback is fired when this endpoint is matched by the WP_REST_Server class.
-        'callback' => 'Afsar\wtk\api_listdata',		// defined in separate script file
-		
-        // Here we register our permissions callback. The callback is fired before the main callback to check if the current user can access the endpoint.
-        //'permission_callback' => 'Afsar\wtk\wtk_api_permissions_check',	
-			
-		// Here we register our arguments schema.
-		'args' => 	[  'example' => [	'description'       => esc_html__( 'This is the index symbol.', MY_TEXT_DOMAIN ),
-										'type'              => 'string',
-										'sanitize_callback' => 'Afsar\wtk\wtk_api_arg_sanitize_callback',
-										'required'          => false
-									]
-					]			
+		'methods'  => \WP_REST_Server::ALLMETHODS ,
+		'callback' => 'Afsar\wtk\api_listdata',		// defined in separate script file
+		'permission_callback' => 'Afsar\wtk\wtk_api_permissions_check',	
+		'access_type'=>'LOGGED_IN'	
 		]
-		
     ) );	
 
 
 	register_rest_route( 'wtk/v1', '/maintdata', array(
 		[      
-		// By using this constant we ensure that when the WP_REST_Server changes our readable endpoints will work as intended.
         'methods'  => \WP_REST_Server::ALLMETHODS ,
-		
-        // Here we register our callback. The callback is fired when this endpoint is matched by the WP_REST_Server class.
         'callback' => 'Afsar\wtk\wtk_maintdata',
-		
-        // Here we register our permissions callback. The callback is fired before the main callback to check if the current user can access the endpoint.
-        //'permission_callback' => 'Afsar\wtk\wtk_api_permissions_check',	
-			
-		// Here we register our arguments schema.
-		'args' => 	[  'example' => [	'description'       => esc_html__( 'This is the index symbol.', MY_TEXT_DOMAIN ),
-										'type'              => 'string',
-										'sanitize_callback' => 'Afsar\wtk\wtk_api_arg_sanitize_callback',
-										'required'          => false
-									]
-					]			
+        'permission_callback' => 'Afsar\wtk\wtk_api_permissions_check',	
+		'access_type'=>'LOGGED_IN'		
 		]
 		
     ) );
 
 
-	register_rest_route( 'wtk/v1', '/testapi', array(
-		[      
-		// By using this constant we ensure that when the WP_REST_Server changes our readable endpoints will work as intended.
-        'methods'  => \WP_REST_Server::ALLMETHODS ,
-		
-        // Here we register our callback. The callback is fired when this endpoint is matched by the WP_REST_Server class.
-        'callback' => 'Afsar\wtk\testapi',
-		
-        // Here we register our permissions callback. The callback is fired before the main callback to check if the current user can access the endpoint.
-        //'permission_callback' => 'Afsar\wtk\wtk_api_permissions_check',	
-			
-		// Here we register our arguments schema.
-		'args' => 	[  'example' => [	'description'       => esc_html__( 'This is the index symbol.', MY_TEXT_DOMAIN ),
-										'type'              => 'string',
-										'sanitize_callback' => 'Afsar\wtk\wtk_api_arg_sanitize_callback',
-										'required'          => false
-									]
-					]			
-		]
-		
-    ) );
+
 
 
 }
 
+
+/**
+ * This is our callback function that embeds our resource in a WP_REST_Response
+ * generic permissions check for all custom routes!
+ *
+ */
+function wtk_api_permissions_check(\WP_REST_Request $request = null) {
+	
+	$params = $request->get_params();
+	if (isset($_REQUEST['request'])) {				// w2ui sends postData in a request variable!
+		$params = array_merge(json_decode(stripslashes($_REQUEST['request']),true), $params);
+		unset($params['request']);
+	}
+	$params = stripslashes_deep($params);
+
+	$this_route = $request->get_attributes();
+	$this_route['access_type'] = (isset($this_route['access_type'])) ? $this_route['access_type']: 'WORDPRESS_API';
+	//return ["status"=>"error","message"=>$this_route];
+
+	switch($this_route['access_type']) {
+		case "NONCE":	
+			$nonce = isset($params['_wpnonce']) ? $params['_wpnonce'] : ''; 
+			if (!wp_verify_nonce($nonce, wtkNonceKey())) {
+				$api_response = ["status"=>"error","message"=>"NONCE is not valid!"];
+			}
+			break;
+		case "LOGGED_IN":				// define different roles/capabailities
+			$JWTToken = getBearerToken();
+			$tokenvalidation = JWTTokenValidation($JWTToken);
+			if ( $tokenvalidation["status"] =="error" ) {
+				$api_response = rest_ensure_response(["status"=>"error","message"=>"Invalid token. Permission denied!"],200);
+			}
+			break;
+		case "WORDPRESS_API":			// wordpress
+			$api_response = rest_ensure_response(["status"=>"error","message"=>"Wordpress REST API has been disabled!"],200);
+			// or we can allow them based on some permission check / enpoint of the route
+			break;
+		default:		// same as explicitly setting to PUBLIC
+			//allow to proceed with no restrictions...
+			break;
+	}
+
+	global $wtk;
+	$wtk->api_authorised = (isset($api_response)) ? false : true;
+	$wtk->api_forbidden_response = $api_response;
+	
+	return $wtk->api_authorised; 
+
+}
+ 
+ 
+ 
 /**
  * Callback function to authorize each api requests
  * 
@@ -291,8 +309,10 @@ function api_before_callback( $response, $handler, \WP_REST_Request $request ) {
 		$api_user = $current_user;
 		
 	global $wtk;
+
 	$wtk->api_call_id = LogApiStart($api_user,$api_request); 
-	
+
+
     return $response;
 
 }
@@ -303,42 +323,15 @@ function api_after_callback( $api_response, $handler, \WP_REST_Request $request 
 
 	// always return this
 	// chance to modify the response here before returning to the client
-	global $current_user; 
+
+	
 	global $wtk;
-
-	//$x = printable($api_response);
-	//$api_response = rest_ensure_response(["status"=>"error","message"=>$x],200);
-
-	$NonceCheckedRoutes = ['/wtk/v1/users',
-						'/wtk/v1/email_verification_code',
-						'/wtk/v1/password_reset',
-						'/wtk/v1/password_reset',
-						'/wtk/v1/update_password',
-						'/wtk/v1/contact_us',
-						'/wtk/v1/import_csvXX'];				//?????
-						
-	$route = $request->get_route();
 	
-	$JWTToken = getBearerToken();
-	
-	//temp
-	///if (in_array($route, $NonceCheckedRoutes)) {
-		//$tokenvalidation = JWTTokenValidation($JWTToken);
-		//$api_response = rest_ensure_response(["status"=>"error","message"=>"Invalid token. Permission denied.", "token"=>$JWTToken, "validation"=>$tokenvalidation],200);
-	//}
-	
-	if (!in_array($route, $NonceCheckedRoutes)) {
-		$tokenvalidation = JWTTokenValidation($JWTToken);
-		//echo printable($tokenvalidation);
-		//if (isset($tokenvalidation["status"]) && $tokenvalidation["status"] =="error") {
-		if ( $tokenvalidation["status"] =="error" ) {
-			if (strpos($route,"wtk/")) {    // it's a plugin api end point
-				//die("Here!");
-				$api_response = rest_ensure_response(["status"=>"error","message"=>"Invalid token. Permission denied!"],200);
-			}
-		}
+	if (!$wtk->api_authorised) {
+		$api_response = $wtk->api_forbidden_response;
 	}
-	
+		
+	global $wtk;
 	LogApiEnd($wtk->api_call_id ,$api_response); 
 				
 	return $api_response;
@@ -476,6 +469,8 @@ function testapi(\WP_REST_Request $request = null) {
 		unset($params['request']);
 	}
 	$params = stripslashes_deep($params);
+	$nonce = isset($params['_wpnonce']) ? $params['_wpnonce'] : ''; 
+	$valid_nonce = (wp_verify_nonce($nonce, wtkNonceKey())) ? "YES" : "NO";
 
 	$JWTToken = getBearerToken();
 	$tokenvalidation = JWTTokenValidation($JWTToken);
@@ -494,17 +489,25 @@ function testapi(\WP_REST_Request $request = null) {
 			];
 	$api_user = ["user_id"=>$current_user->ID,"user_login"=>$current_user->user_login, "user_name"=>$current_user->display_name];
 	
-	$api_response = 
-		[
+	$api_response = [
 			"api_request"=>$api_request,
 			"api_user"=>$tokenvalidation,
+			"valid_nonce"=>$valid_nonce,
 			"status"=>"success",
-			"message"=>"Data retrived succesfully",
+			"message"=>"API accessed succesfully",
 		];
-
+	
+			// perform dummy insert just so I can check if this bit of code was entered
+			global $db;
+			$query = "INSERT INTO " . prefix("apicalls") . " SET start_time = now(), api_user = 'Test Insert', api_request = 'Test Insert'";
+			$stmt = $db->prepare($query);
+			$result = $stmt->execute();
+			$stmt = null;
 	
 	return rest_ensure_response($api_response,200);
 }
+
+
 
 // generic api handler for a generic endpoint
 // specifically for requests coming from w2ui components 
@@ -675,32 +678,7 @@ function wtk_api_arguments() {
 }
 
 
-/**
- * This is our callback function that embeds our resource in a WP_REST_Response
- * generic permissions check for all custom routes!
- *
- */
-function wtk_api_permissions_check(\WP_REST_Request $request = null) {
-	
-	$params = $request->get_params();
-	if (isset($_REQUEST['request'])) {				// w2ui sends postData in a request variable!
-		$params = array_merge(json_decode(stripslashes($_REQUEST['request']),true), $params);
-		unset($params['request']);
-	}
-	$params = stripslashes_deep($params);
-	$nonce = isset($params['_wpnonce']) ? $params['_wpnonce'] : ''; 
 
-	global $wtk;
-	if (wp_verify_nonce($nonce, wtkNonceKey())) {
-		$wtk->api_authorised = true;
-	} else {
-		$wtk->api_authorised = false;
-	}
-	
-	return $wtk->api_authorised;  //wp_verify_nonce($nonce, wtkNonceKey());
-
-}
- 
 
 
 ###### END REST API ######

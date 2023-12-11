@@ -93,7 +93,7 @@ function RegForm() {
 
 	$user_login = "";
 	$user_email = "";
-	$lst = SelectList("SELECT id, usergroup FROM ".prefix("usergroups")." ORDER BY seqno;");
+	//$lst = SelectList("SELECT id, usergroup FROM ".prefix("usergroups")." ORDER BY seqno;");
 			
 	// registration form...
 	?>
@@ -124,17 +124,18 @@ function RegForm() {
 			<input type="password" class="form-control" name="user_pass" id="user_pass" required placeholder="password" autocomplete="off" />
 		</div>
 
-
-		<div class="form-group">
-			<label for="user_group">User Group</label>
-			<select class="form-control" name="user_group" id="user_group" value="" required>
-				<?php
-				foreach($lst as $key => $value):
-					echo '<option value="'.$key.'">'.$value.'</option>'; //close your tags!!
-				endforeach;
-				?>
-			</select>
-		</div>
+					
+					<div class="form-group" style="display:none" >
+						<label for="user_group">User Group</label>
+						<select class="form-control" name="user_group" id="user_group" value="" required>
+							<?php
+							//foreach($lst as $key => $value):
+							//	echo '<option value="'.$key.'">'.$value.'</option>'; //close your tags!!
+							//endforeach;
+							?>
+						</select>
+					</div>
+					
 
 		<div class="form-group">
 			<label for="referral_code">Referral Code</label>

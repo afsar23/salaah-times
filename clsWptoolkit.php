@@ -21,7 +21,8 @@ class Wptoolkit {
 	public  $debug_level;
 
 	public $api_call_id;
-	public $api_authorised;
+	public $api_authorised;	
+	public $api_forbidden_reponse;
 	
 	/**
 	* Define the core functionality of the plugin.

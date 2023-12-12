@@ -19,19 +19,19 @@ if ( ! defined( 'WPINC' ) ) {
 ##########################
 
 define("MY_TEXT_DOMAIN", "wtk");
+define("API_NAMESPACE","wtk/v1");
 
 // change nonce lifetime to 1 hour
 //add_filter( 'nonce_life', function () { return 1 * HOUR_IN_SECONDS; } );
 
 
-add_action( 'rest_api_init', 'Afsar\wtk\api_routes' );
+add_action( 'rest_api_init', 'Afsar\wtk\api_register_routes' );
 
 
 require_once plugin_dir_path( __FILE__ ) . 'api_Upload.php';
 require_once plugin_dir_path( __FILE__ ) . 'api_Mosques.php';
 				
-function api_routes($request = null) {
-
+function api_register_routes($request = null) {
 
 	//$pdata  = json_decode(file_get_contents("php://input"));   // all the posted data required to perform the method
 
@@ -39,150 +39,63 @@ function api_routes($request = null) {
 	//echo json_encode(["status"=>"error","message"=>"Better luck next time, matey!"]);
 	//exit;
 
-			register_rest_route( 'wtk/v1', '/testapi', array(
-				[      
-				// By using this constant we ensure that when the WP_REST_Server changes our readable endpoints will work as intended.
-				'methods'  => \WP_REST_Server::ALLMETHODS ,
-				'callback' => 'Afsar\wtk\testapi',
-				'permission_callback' => 'Afsar\wtk\wtk_api_permissions_check',
-				'access_type'=>'LOGGED_IN'
-				]
-			) );
-				
-			register_rest_route( 'wtk/v1', '/import_csv', [
-					'methods' => [ 'POST' ],
-					'callback' => 'Afsar\wtk\importCSVPostRequestHandler',
-					'permission_callback' => 'Afsar\wtk\wtk_api_permissions_check',
-					'access_type'=>'LOGGED_IN'
-			] );	
+	register_rest_route( API_NAMESPACE, '/testapi', array(
+		[   
+		'methods'  => \WP_REST_Server::ALLMETHODS ,
+		'callback' => 'Afsar\wtk\testapi',
+		'permission_callback' => 'Afsar\wtk\wtk_api_permissions_check',
+		'access_type'=>'LOGGED_IN'
+		]
+	) );	
 	
-			register_rest_route( 'wtk/v1', '/mosques', array(
-				[      
-				'methods'  => [ 'POST' ],			
-				'callback' => 'Afsar\wtk\api_mosques',
-				'permission_callback' => 'Afsar\wtk\wtk_api_permissions_check',	
-				'access_type'=>'NONCE'
-				]			
-			) );
-	
-	
-	// register_rest_route() handles more arguments but we are going to stick to the basics for now.
-    
-	register_rest_route( 'wtk/v1', '/users', array(
+	register_rest_route( API_NAMESPACE, '/register', array(
 		[      
-		// By using this constant we ensure that when the WP_REST_Server changes our readable endpoints will work as intended.
-        'methods'  => \WP_REST_Server::CREATABLE ,
-		
-        // Here we register our callback. The callback is fired when this endpoint is matched by the WP_REST_Server class.
-        'callback' => 'Afsar\wtk\api_users_register',
-		
-        // Here we register our permissions callback. The callback is fired before the main callback to check if the current user can access the endpoint.
-        'permission_callback' => 'Afsar\wtk\wtk_api_permissions_check',	
-		'access_type'=>'NONCE',	
-		// Here we register our arguments schema.
-		'args' => 	[  'example' => [	'description'       => esc_html__( 'This is the index symbol.', MY_TEXT_DOMAIN ),
-										'type'              => 'string',
-										'sanitize_callback' => 'Afsar\wtk\wtk_api_arg_sanitize_callback',
-										'required'          => false
-									]
-					]			
+		'methods'  => \WP_REST_Server::CREATABLE ,
+		'callback' => 'Afsar\wtk\api_users_register',
+		'permission_callback' => 'Afsar\wtk\wtk_api_permissions_check',	
+		'access_type'=>'NONCE'			
 		]			
-    ) );
-	
+    ) );	
 	    
-	register_rest_route( 'wtk/v1', '/password_reset', array(
+	register_rest_route( API_NAMESPACE, '/password_reset', array(
 		[      
-		// By using this constant we ensure that when the WP_REST_Server changes our readable endpoints will work as intended.
-        'methods'  => \WP_REST_Server::CREATABLE ,
-		
-        // Here we register our callback. The callback is fired when this endpoint is matched by the WP_REST_Server class.
-        'callback' => 'Afsar\wtk\send_reset_password_link',
-		
-        // Here we register our permissions callback. The callback is fired before the main callback to check if the current user can access the endpoint.
-        'permission_callback' => 'Afsar\wtk\wtk_api_permissions_check',	
-			
-		// Here we register our arguments schema.
-		'args' => 	[  'example' => [	'description'       => esc_html__( 'This is the index symbol.', MY_TEXT_DOMAIN ),
-										'type'              => 'string',
-										'sanitize_callback' => 'Afsar\wtk\wtk_api_arg_sanitize_callback',
-										'required'          => false
-									]
-					]			
-		]
-		
+		'methods'  => \WP_REST_Server::CREATABLE ,
+		'callback' => 'Afsar\wtk\send_reset_password_link',
+		'permission_callback' => 'Afsar\wtk\wtk_api_permissions_check',	
+		'access_type'=>'NONCE'			
+		]		
+    ) );	
+
+	register_rest_route( API_NAMESPACE, '/email_verification_code', array(
+		[      
+		'methods'  => \WP_REST_Server::CREATABLE ,
+		'callback' => 'Afsar\wtk\api_email_verification_code',
+		'permission_callback' => 'Afsar\wtk\wtk_api_permissions_check',	
+		'access_type'=>'NONCE'			
+		]		
     ) );
 	
-
-	register_rest_route( 'wtk/v1', '/email_verification_code', array(
+	register_rest_route( API_NAMESPACE, '/update_password', array(
 		[      
-		// By using this constant we ensure that when the WP_REST_Server changes our readable endpoints will work as intended.
-        'methods'  => \WP_REST_Server::CREATABLE ,
-		
-        // Here we register our callback. The callback is fired when this endpoint is matched by the WP_REST_Server class.
-        'callback' => 'Afsar\wtk\api_email_verification_code',
-		
-        // Here we register our permissions callback. The callback is fired before the main callback to check if the current user can access the endpoint.
-        'permission_callback' => 'Afsar\wtk\wtk_api_permissions_check',	
-			
-		// Here we register our arguments schema.
-		'args' => 	[  'example' => [	'description'       => esc_html__( 'This is the index symbol.', MY_TEXT_DOMAIN ),
-										'type'              => 'string',
-										'sanitize_callback' => 'Afsar\wtk\wtk_api_arg_sanitize_callback',
-										'required'          => false
-									]
-					]			
-		]
-		
-    ) );
-
-	
-	register_rest_route( 'wtk/v1', '/update_password', array(
-		[      
-		// By using this constant we ensure that when the WP_REST_Server changes our readable endpoints will work as intended.
         'methods'  => \WP_REST_Server::ALLMETHODS ,
-		
-        // Here we register our callback. The callback is fired when this endpoint is matched by the WP_REST_Server class.
         'callback' => 'Afsar\wtk\updatepassword',
-		
-        // Here we register our permissions callback. The callback is fired before the main callback to check if the current user can access the endpoint.
-        'permission_callback' => 'Afsar\wtk\wtk_api_permissions_check',	
-			
-		// Here we register our arguments schema.
-		'args' => 	[  'example' => [	'description'       => esc_html__( 'This is the index symbol.', MY_TEXT_DOMAIN ),
-										'type'              => 'string',
-										'sanitize_callback' => 'Afsar\wtk\wtk_api_arg_sanitize_callback',
-										'required'          => false
-									]
-					]			
+		'permission_callback' => 'Afsar\wtk\wtk_api_permissions_check',	
+		'access_type'=>'NONCE'	
 		]
 		
     ) );	
 	
 	
-	register_rest_route( 'wtk/v1', '/contactus', array(
+	register_rest_route( API_NAMESPACE, '/contactus', array(
 		[      
-		// By using this constant we ensure that when the WP_REST_Server changes our readable endpoints will work as intended.
-        'methods'  => \WP_REST_Server::ALLMETHODS ,
-		
-        // Here we register our callback. The callback is fired when this endpoint is matched by the WP_REST_Server class.
-        'callback' => 'Afsar\wtk\api_contactus',
-		
-        // Here we register our permissions callback. The callback is fired before the main callback to check if the current user can access the endpoint.
+		'methods'  => \WP_REST_Server::ALLMETHODS ,
+		'callback' => 'Afsar\wtk\api_contactus',		
         'permission_callback' => 'Afsar\wtk\wtk_api_permissions_check',	
-			
-		// Here we register our arguments schema.
-		'args' => 	[  'example' => [	'description'       => esc_html__( 'This is the index symbol.', MY_TEXT_DOMAIN ),
-										'type'              => 'string',
-										'sanitize_callback' => 'Afsar\wtk\wtk_api_arg_sanitize_callback',
-										'required'          => false
-									]
-					]			
-		]
-		
+		'access_type'=>'NONCE'	
+		]		
     ) );
 
-
-	register_rest_route( 'wtk/v1', '/listdata', array(			
+	register_rest_route( API_NAMESPACE, '/listdata', array(			
 		[      
 		'methods'  => \WP_REST_Server::ALLMETHODS ,
 		'callback' => 'Afsar\wtk\api_listdata',		// defined in separate script file
@@ -191,20 +104,30 @@ function api_routes($request = null) {
 		]
     ) );	
 
-
-	register_rest_route( 'wtk/v1', '/maintdata', array(
+	register_rest_route( API_NAMESPACE, '/maintdata', array(
 		[      
         'methods'  => \WP_REST_Server::ALLMETHODS ,
         'callback' => 'Afsar\wtk\wtk_maintdata',
         'permission_callback' => 'Afsar\wtk\wtk_api_permissions_check',	
 		'access_type'=>'LOGGED_IN'		
-		]
-		
+		]		
     ) );
-
-
-
-
+	
+	register_rest_route( API_NAMESPACE, '/mosques', array(
+		[      
+		'methods'  => [ 'POST' ],			
+		'callback' => 'Afsar\wtk\api_mosques',
+		'permission_callback' => 'Afsar\wtk\wtk_api_permissions_check',	
+		'access_type'=>'NONCE'
+		]			
+	) );
+	
+	register_rest_route( API_NAMESPACE, '/import_csv', [
+		'methods' => [ 'POST' ],
+		'callback' => 'Afsar\wtk\importCSVPostRequestHandler',
+		'permission_callback' => 'Afsar\wtk\wtk_api_permissions_check',
+		'access_type'=>'LOGGED_IN'
+	] );	
 
 }
 
@@ -720,7 +643,7 @@ function api_users_register(\WP_REST_Request $request = null) {
 	// check verification code matches the hash
 	if (!password_verify($email . $token_raw, $token_hash)) {
 		$response = [	"status"		=> "error",	"message"		=> "Invalid Verification Code"];	
-	} else if ($referral_code <> get_option("wtk_referral_code","Oops!")) {
+	} elseif (false) { // ($referral_code <> get_option("wtk_referral_code","Oops!")) {
 		$response = [	"status"		=> "error",	"message"		=> "Invalid Referral Code"];	
 	} else { // all good so far....
 		
@@ -738,7 +661,7 @@ function api_users_register(\WP_REST_Request $request = null) {
 								"message"		=> "Registration succesful (user id = ".$newUserID .")",
 								"redirect" => home_url("/my-account?fnc=welcome")
 							];							
-			update_user_meta( $newUserID, 'user_group', $usergroup );					
+			//update_user_meta( $newUserID, 'user_group', $usergroup );					
 			wp_signon(["user_login"=>$username, "user_password"=>$password,"remember"=>true]);		
 		}
 	}

@@ -85,11 +85,10 @@ function registration_form($pg_atts) {
 function RegForm() {
 
 	$api_email_code = get_rest_url(null,"wtk/v1/email_verification_code");		// custom user registration end point
-    $api_url        = get_rest_url(null,"wtk/v1/users/?arg1=Y&arg2=No");		// custom user registration end point
+    $api_url        = get_rest_url(null,"wtk/v1/register/?arg1=Y&arg2=No");		// custom user registration end point
 	$jsCallBack     = "postFormProcessing";
 
-    //echo "<pre>".$api_url."</pre>";
-	
+    //echo "<pre>".$api_url."</pre>";	
 
 	$user_login = "";
 	$user_email = "";
@@ -123,26 +122,23 @@ function RegForm() {
 			<label for="user_pass">Choose Password</label>
 			<input type="password" class="form-control" name="user_pass" id="user_pass" required placeholder="password" autocomplete="off" />
 		</div>
-
-					
+		
 					<div class="form-group" style="display:none" >
 						<label for="user_group">User Group</label>
-						<select class="form-control" name="user_group" id="user_group" value="" required>
+						<select class="form-control" name="user_group" id="user_group" value="1" >
 							<?php
 							//foreach($lst as $key => $value):
 							//	echo '<option value="'.$key.'">'.$value.'</option>'; //close your tags!!
 							//endforeach;
 							?>
 						</select>
-					</div>
-					
+					</div>					
+
 
 		<div class="form-group">
 			<label for="referral_code">Referral Code</label>
 			<input type="text" class="form-control" name="referral_code" id="referral_code" value="" required />
 		</div>
-
-
 
 
 		<?php 
@@ -248,10 +244,8 @@ function reset_password() {
 }
 	
 
-function profile($pg_atts) {
-	
+function profile($pg_atts) {	
 	echo "<p>Form to edit profile</p>";
-
 }
 
 #####################################################################################

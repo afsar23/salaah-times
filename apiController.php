@@ -147,10 +147,10 @@ function wtk_api_permissions_check(\WP_REST_Request $request = null) {
 	$params = stripslashes_deep($params);
 
 	$this_route = $request->get_attributes();
-	$this_route['access_type'] = (isset($this_route['access_type'])) ? $this_route['access_type']: 'WORDPRESS_API';
+	$access_type = (isset($this_route['access_type'])) ? $this_route['access_type']: "DENY";			
 	//return ["status"=>"error","message"=>$this_route];
 
-	switch($this_route['access_type']) {
+	switch($access_type) {
 		case "NONCE":	
 			$nonce = isset($params['_wpnonce']) ? $params['_wpnonce'] : ''; 
 			if (!wp_verify_nonce($nonce, wtkNonceKey())) {
@@ -164,12 +164,11 @@ function wtk_api_permissions_check(\WP_REST_Request $request = null) {
 				$api_response = rest_ensure_response(["status"=>"error","message"=>"Invalid token. Permission denied!"],200);
 			}
 			break;
-		case "WORDPRESS_API":			// wordpress
-			$api_response = rest_ensure_response(["status"=>"error","message"=>"Wordpress REST API has been disabled!"],200);
-			// or we can allow them based on some permission check / enpoint of the route
+		case "DENY":		// deny access as the wtk api hasn't been assigned access type, so the default is to deny! 
+			$api_response = ["status"=>"error","message"=>"Access is denied to this API"];
 			break;
-		default:		// same as explicitly setting to PUBLIC
-			//allow to proceed with no restrictions...
+		default: 			// deny access, as the access type in registering the route has been mis-spelt 
+			$api_response = ["status"=>"error","message"=>"Invalid Access Type!"];
 			break;
 	}
 
@@ -211,10 +210,6 @@ function api_before_callback( $response, $handler, \WP_REST_Request $request ) {
 
 	$JWTToken = getBearerToken();
 	$tokenvalidation = JWTTokenValidation($JWTToken);
-	//if ($tokenvalidation["status"]=="error") {
-	//	$response = ["status"=>"error","message"=>"Invalid token. Permission denied! Before"];
-	//	return rest_ensure_response($response,200); 
-	//}
 	
 	$api_request = [
 			"params"=>$params,
@@ -244,17 +239,21 @@ function api_before_callback( $response, $handler, \WP_REST_Request $request ) {
 add_filter( 'rest_request_after_callbacks', 'Afsar\wtk\api_after_callback', 10, 3 );
 function api_after_callback( $api_response, $handler, \WP_REST_Request $request ) {
 
-	// always return this
 	// chance to modify the response here before returning to the client
+	
+	global $wtk;
 
+	if (strpos($request->get_route(),API_NAMESPACE)) {
+		if (!$wtk->api_authorised) {
+			$api_response = $wtk->api_forbidden_response;
+		}
+	} else {  
+		//wordpress api was called, so we can decide to override the response if the referer was some other domain!
+		if ( ! (substr($request->get_header('referer'), 0, strlen(home_url())) == home_url())) {	
+			$api_response = ["status"=>"error","message"=>"Wordpress API access is disabled!"];
+		}
+	}	
 	
-	global $wtk;
-	
-	if (!$wtk->api_authorised) {
-		$api_response = $wtk->api_forbidden_response;
-	}
-		
-	global $wtk;
 	LogApiEnd($wtk->api_call_id ,$api_response); 
 				
 	return $api_response;

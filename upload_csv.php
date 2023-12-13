@@ -19,6 +19,9 @@ function UploadCSV() {
     $api_url        = get_rest_url(null,"wtk/v1/import_csv");		// custom user registration end point
 	$jsCallBack     = "postFormProcessing";
 
+
+	echo '<a href="' . get_rest_url(null,"wp/v2/posts"). '">Test Wordpress API - '.get_rest_url(null,"wp/v2/posts").'</a><br/>';
+	
 	?>
 		<div id="response"></div>
 		<form id="importform" action="javascript:;" onsubmit="submitFormCustom(this,'<?=$api_url?>',<?=$jsCallBack?>);"> 
@@ -30,6 +33,7 @@ function UploadCSV() {
 		
 		</form>
 	<?php
+	
 }		
 
 ?>

@@ -32,6 +32,8 @@ function appHome($pg_atts) {
 	MasjidSearchForm($cities);
 	echo '<div id="mosqueresults"></div>';
 
+	echo '<a href="' . get_rest_url(null,"wp/v2/posts"). '">Test Wordpress API - '.get_rest_url(null,"wp/v2/posts").'</a><br/>';
+	
 	//$cities = (object)($cities);
 	//echo  printable($cities);
 }

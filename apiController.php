@@ -124,7 +124,7 @@ function api_register_routes($request = null) {
 	
 	register_rest_route( API_NAMESPACE, '/import_csv', [
 		'methods' => [ 'POST' ],
-		'callback' => 'Afsar\wtk\importCSVPostRequestHandler',
+		'callback' => 'Afsar\wtk\importCSVHandler',
 		'permission_callback' => 'Afsar\wtk\wtk_api_permissions_check',
 		'access_type'=>'LOGGED_IN'
 	] );	
@@ -174,7 +174,7 @@ function wtk_api_permissions_check(\WP_REST_Request $request = null) {
 
 	global $wtk;
 	$wtk->api_authorised = (isset($api_response)) ? false : true;
-	$wtk->api_forbidden_response = $api_response;
+	$wtk->api_forbidden_response = (isset($api_response)) ? $api_response : '';
 	
 	return $wtk->api_authorised; 
 
@@ -242,7 +242,8 @@ function api_after_callback( $api_response, $handler, \WP_REST_Request $request 
 	// chance to modify the response here before returning to the client
 	
 	global $wtk;
-
+			
+			
 	if (strpos($request->get_route(),API_NAMESPACE)) {
 		if (!$wtk->api_authorised) {
 			$api_response = $wtk->api_forbidden_response;
@@ -253,12 +254,15 @@ function api_after_callback( $api_response, $handler, \WP_REST_Request $request 
 			$api_response = ["status"=>"error","message"=>"Wordpress API access is disabled!"];
 		}
 	}	
-	
+
+
+
 	LogApiEnd($wtk->api_call_id ,$api_response); 
 				
 	return $api_response;
 	
 }
+
 
     /*******
      * Audit log for an api call

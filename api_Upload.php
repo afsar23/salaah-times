@@ -11,15 +11,14 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 	
-function importCSVPostRequestHandler( \WP_REST_Request $request ) {
+function importCSVHandler( \WP_REST_Request $request ) {
 
 	$permittedExtension = 'csv';
 	$permittedTypes = ['text/csv', 'text/plain', 'application/csv'];
 
 	$files = $request->get_file_params();
 	$headers = $request->get_headers();
-	  
-	  
+	  		  
 	if ( !empty( $files ) && !empty( $files['file'] ) ) {
 	  $file = $files['file'];
 	}
@@ -47,6 +46,8 @@ function importCSVPostRequestHandler( \WP_REST_Request $request ) {
 		  || !in_array( $mimeType, $permittedTypes ) ) {
 			return rest_ensure_response( ["status" => "error", "message"=>"Invalid mime type: ".$mimeType], 200 );
 	  }
+	
+
 	
 	// we've passed our checks, now read and process the file
 	$handle = fopen( $file['tmp_name'], 'r' );
